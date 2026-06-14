@@ -50,17 +50,21 @@ export default function App() {
       const res = await fetch(SCRIPT_URL, { method: "GET", mode: "cors" });
       const json = await res.json();
       if (json.result === "success" && json.data) {
-        const loaded = json.data.map((o, i) => ({
-          ...o,
-          id: Date.now() + i,
-          month: o.date ? String(o.date).split("/")[0] : nowMonth(),
-          ordered: false,
-          arrived: o.arrived || false,
-          picked: o.picked || false,
-          qty: o.qty || 1,
-          price: o.price || "",
-          cost: o.cost || "",
-        }));
+        const loaded = json.data.map((o, i) => {
+          const m = o.sheetMonth ? parseInt(String(o.sheetMonth).replace("月","")) : nowMonth();
+          return {
+            ...o,
+            id: Date.now() + i,
+            month: m,
+            date: o.date ? `${m}/${o.date}` : "",
+            ordered: false,
+            arrived: o.arrived || false,
+            picked: o.picked || false,
+            qty: o.qty || 1,
+            price: o.price || "",
+            cost: o.cost || "",
+          };
+        });
         setOrders(loaded);
         // Add any new customers
         const newCustomers = [...new Set(loaded.map(o => o.customer).filter(Boolean))];
