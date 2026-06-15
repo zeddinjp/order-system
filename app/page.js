@@ -170,6 +170,8 @@ export default function App() {
     arrivedOrders.forEach(o => { if (!map[o.customer]) map[o.customer] = []; map[o.customer].push(o); });
     return map;
   }, [orders]);
+
+  const grouped = useMemo(() => {
     const map = {};
     filtered.forEach(o => { if (!map[o.customer]) map[o.customer] = []; map[o.customer].push(o); });
     return map;
