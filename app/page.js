@@ -433,7 +433,7 @@ export default function App() {
             Object.entries(arrivedGrouped).map(([customer, cOrders]) => {
               const total = cOrders.reduce((s, o) => s + safeNum(o.price) * safeNum(o.qty), 0);
               const copyText = () => {
-                const lines = cOrders.map(o => `・${o.product}${o.style ? "／" + o.style : ""} ×${o.qty}　NT$${(safeNum(o.price)*safeNum(o.qty)).toLocaleString()}`);
+                const lines = cOrders.map(o => `・${o.product}${o.style ? "／" + o.style : ""} NT$${safeNum(o.price).toLocaleString()} ×${o.qty}　小計NT$${(safeNum(o.price)*safeNum(o.qty)).toLocaleString()}`);
                 const text = `📦 ${customer} 到貨通知\n\n${lines.join("\n")}\n\n總金額：NT$${total.toLocaleString()}\n請安排時間取貨，謝謝！`;
                 navigator.clipboard.writeText(text);
                 alert("已複製到剪貼簿！");
@@ -447,7 +447,7 @@ export default function App() {
                   <div style={{ padding: "10px 14px" }}>
                     {cOrders.map((o, idx) => (
                       <div key={o.id} style={{ fontSize: 13, padding: "6px 0", borderBottom: idx === cOrders.length - 1 ? "none" : "1px dashed #e8e0d5", display: "flex", justifyContent: "space-between", gap: 8 }}>
-                        <span>・{o.product}{o.style && <span style={{ color: "#888" }}>／{o.style}</span>} ×{o.qty}</span>
+                        <span>・{o.product}{o.style && <span style={{ color: "#888" }}>／{o.style}</span>} NT${safeNum(o.price).toLocaleString()} ×{o.qty}</span>
                         <span style={{ whiteSpace: "nowrap", fontWeight: 600 }}>NT${(safeNum(o.price)*safeNum(o.qty)).toLocaleString()}</span>
                       </div>
                     ))}
