@@ -57,7 +57,7 @@ export default function App() {
             id: Date.now() + i,
             month: m,
             date: o.date ? `${m}/${o.date}` : "",
-            ordered: false,
+            ordered: true,
             arrived: o.arrived || false,
             picked: o.picked || false,
             qty: o.qty || 1,
@@ -119,7 +119,27 @@ export default function App() {
     setTab("overview");
   };
 
-  const toggleStatus = (id, field) => setOrders(os => os.map(o => o.id === id ? { ...o, [field]: !o[field] } : o));
+  const updateStatusInSheet = async (rowId, field, value) => {
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "updateStatus", rowId, field, value })
+      });
+    } catch (err) {}
+  };
+
+  const toggleStatus = (id, field) => {
+    setOrders(os => os.map(o => {
+      if (o.id !== id) return o;
+      const newVal = !o[field];
+      if (o.rowId && (field === "arrived" || field === "picked")) {
+        updateStatusInSheet(o.rowId, field, newVal);
+      }
+      return { ...o, [field]: newVal };
+    }));
+  };
   const deleteOrder = (id) => { if (confirm("確定刪除這筆訂單？")) setOrders(os => os.filter(o => o.id !== id)); };
   const startEdit = (order) => { setForm({ ...order }); setEditId(order.id); setTab("add"); };
   const addCustomer = () => {
