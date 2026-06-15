@@ -164,7 +164,12 @@ export default function App() {
     return cMatch && mMatch && sMatch;
   }), [orders, filterCustomer, filterMonth, filterStatus]);
 
-  const grouped = useMemo(() => {
+  const arrivedGrouped = useMemo(() => {
+    const arrivedOrders = orders.filter(o => o.arrived && !o.picked);
+    const map = {};
+    arrivedOrders.forEach(o => { if (!map[o.customer]) map[o.customer] = []; map[o.customer].push(o); });
+    return map;
+  }, [orders]);
     const map = {};
     filtered.forEach(o => { if (!map[o.customer]) map[o.customer] = []; map[o.customer].push(o); });
     return map;
@@ -197,7 +202,7 @@ export default function App() {
 
       {/* Tabs */}
       <div style={{ display: "flex", background: "#e8e0d5", borderBottom: "2px solid #2d2318" }}>
-        {[["add", "＋ 新增訂單"], ["overview", "📋 訂單總覽"]].map(([key, label]) => (
+        {[["add", "＋ 新增訂單"], ["overview", "📋 訂單總覽"], ["arrived", "📦 到貨清單"]].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)} style={{
             flex: 1, padding: "12px", border: "none", cursor: "pointer",
             background: tab === key ? "#2d2318" : "transparent",
@@ -406,6 +411,48 @@ export default function App() {
                       </div>
                     );
                   })}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {/* Arrived list tab */}
+      {tab === "arrived" && (
+        <div style={{ padding: 16 }}>
+          {Object.keys(arrivedGrouped).length === 0 ? (
+            <div style={{ textAlign: "center", padding: 40, color: "#aaa", fontSize: 14 }}>
+              <div style={{ fontSize: 32, marginBottom: 12 }}>📦</div>
+              <div>目前沒有「已到貨未取貨」的商品</div>
+            </div>
+          ) : (
+            Object.entries(arrivedGrouped).map(([customer, cOrders]) => {
+              const total = cOrders.reduce((s, o) => s + Number(o.price||0) * Number(o.qty||0), 0);
+              const copyText = () => {
+                const lines = cOrders.map(o => `・${o.product}${o.style ? "／" + o.style : ""} ×${o.qty}　NT$${(Number(o.price)*Number(o.qty)).toLocaleString()}`);
+                const text = `📦 ${customer} 到貨通知\n\n${lines.join("\n")}\n\n總金額：NT$${total.toLocaleString()}\n請安排時間取貨，謝謝！`;
+                navigator.clipboard.writeText(text);
+                alert("已複製到剪貼簿！");
+              };
+              return (
+                <div key={customer} style={{ marginBottom: 16, background: "#fff", borderRadius: 10, overflow: "hidden" }}>
+                  <div style={{ background: "#2d2318", color: "#f5f0eb", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontWeight: 700, fontSize: 15 }}>{customer}</span>
+                    <span style={{ fontSize: 12, opacity: 0.85 }}>總金額 NT${total.toLocaleString()}</span>
+                  </div>
+                  <div style={{ padding: "10px 14px" }}>
+                    {cOrders.map((o, idx) => (
+                      <div key={o.id} style={{ fontSize: 13, padding: "6px 0", borderBottom: idx === cOrders.length - 1 ? "none" : "1px dashed #e8e0d5", display: "flex", justifyContent: "space-between", gap: 8 }}>
+                        <span>・{o.product}{o.style && <span style={{ color: "#888" }}>／{o.style}</span>} ×{o.qty}</span>
+                        <span style={{ whiteSpace: "nowrap", fontWeight: 600 }}>NT${(Number(o.price)*Number(o.qty)).toLocaleString()}</span>
+                      </div>
+                    ))}
+                    <div style={{ borderTop: "1px solid #e8e0d5", marginTop: 8, paddingTop: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontWeight: 700, fontSize: 13 }}>總金額：NT${total.toLocaleString()}</span>
+                      <button onClick={copyText} style={{ background: "#4a7c59", color: "#fff", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>📋 複製通知</button>
+                    </div>
+                  </div>
                 </div>
               );
             })
