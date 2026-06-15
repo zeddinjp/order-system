@@ -175,8 +175,9 @@ export default function App() {
     return map;
   }, [filtered]);
 
-  const totalQty = filtered.reduce((s, o) => s + Number(o.qty || 0), 0);
-  const totalAmount = filtered.reduce((s, o) => s + Number(o.price || 0) * Number(o.qty || 0), 0);
+  const safeNum = (v) => { const n = Number(v); return isNaN(n) ? 0 : n; };
+  const totalQty = filtered.reduce((s, o) => s + safeNum(o.qty), 0);
+  const totalAmount = filtered.reduce((s, o) => s + safeNum(o.price) * safeNum(o.qty), 0);
 
   return (
     <div style={{ fontFamily: "'Noto Sans TC', sans-serif", background: "#f5f0eb", minHeight: "100vh", color: "#2d2318" }}>
@@ -363,7 +364,7 @@ export default function App() {
             </div>
           ) : (
             Object.entries(grouped).map(([customer, cOrders]) => {
-              const cTotal = cOrders.reduce((s, o) => s + Number(o.price||0) * Number(o.qty||0), 0);
+              const cTotal = cOrders.reduce((s, o) => s + safeNum(o.price) * safeNum(o.qty), 0);
               return (
                 <div key={customer} style={{ marginBottom: 16 }}>
                   <div style={{ background: "#2d2318", color: "#f5f0eb", borderRadius: "10px 10px 0 0", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -372,7 +373,7 @@ export default function App() {
                   </div>
                   {cOrders.map((o, i) => {
                     const waiting = !o.arrived ? waitingLabel(o.month) : null;
-                    const profit = o.cost ? (Number(o.price) - Number(o.cost)) * Number(o.qty) : null;
+                    const profit = o.cost ? (safeNum(o.price) - safeNum(o.cost)) * safeNum(o.qty) : null;
                     const allDone = o.ordered && o.arrived && o.picked;
                     return (
                       <div key={o.id} style={{
@@ -390,8 +391,8 @@ export default function App() {
                           {waiting && <span style={{ background: "#fff3cd", color: "#856404", borderRadius: 6, padding: "1px 7px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>⏳ {waiting}</span>}
                         </div>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "3px 12px", fontSize: 12, color: "#666", marginBottom: 8 }}>
-                          {o.price && <span>💴 NT${Number(o.price).toLocaleString()} × {o.qty} = <strong style={{ color: "#2d2318" }}>NT${(Number(o.price)*Number(o.qty)).toLocaleString()}</strong></span>}
-                          {o.cost && <span style={{ color: "#888" }}>成本 NT${(Number(o.cost)*Number(o.qty)).toLocaleString()}</span>}
+                          {o.price && <span>💴 NT${safeNum(o.price).toLocaleString()} × {o.qty} = <strong style={{ color: "#2d2318" }}>NT${(safeNum(o.price)*safeNum(o.qty)).toLocaleString()}</strong></span>}
+                          {o.cost && <span style={{ color: "#888" }}>成本 NT${(safeNum(o.cost)*safeNum(o.qty)).toLocaleString()}</span>}
                           {profit !== null && <span style={{ color: profit >= 0 ? "#4a7c59" : "#c0392b", fontWeight: 600 }}>利潤 NT${profit.toLocaleString()}</span>}
                           {o.supplier && <span>🏪 {o.supplier}</span>}
                           {o.weight && <span>⚖️ {o.weight}g</span>}
@@ -428,9 +429,9 @@ export default function App() {
             </div>
           ) : (
             Object.entries(arrivedGrouped).map(([customer, cOrders]) => {
-              const total = cOrders.reduce((s, o) => s + Number(o.price||0) * Number(o.qty||0), 0);
+              const total = cOrders.reduce((s, o) => s + safeNum(o.price) * safeNum(o.qty), 0);
               const copyText = () => {
-                const lines = cOrders.map(o => `・${o.product}${o.style ? "／" + o.style : ""} ×${o.qty}　NT$${(Number(o.price)*Number(o.qty)).toLocaleString()}`);
+                const lines = cOrders.map(o => `・${o.product}${o.style ? "／" + o.style : ""} ×${o.qty}　NT$${(safeNum(o.price)*safeNum(o.qty)).toLocaleString()}`);
                 const text = `📦 ${customer} 到貨通知\n\n${lines.join("\n")}\n\n總金額：NT$${total.toLocaleString()}\n請安排時間取貨，謝謝！`;
                 navigator.clipboard.writeText(text);
                 alert("已複製到剪貼簿！");
@@ -445,7 +446,7 @@ export default function App() {
                     {cOrders.map((o, idx) => (
                       <div key={o.id} style={{ fontSize: 13, padding: "6px 0", borderBottom: idx === cOrders.length - 1 ? "none" : "1px dashed #e8e0d5", display: "flex", justifyContent: "space-between", gap: 8 }}>
                         <span>・{o.product}{o.style && <span style={{ color: "#888" }}>／{o.style}</span>} ×{o.qty}</span>
-                        <span style={{ whiteSpace: "nowrap", fontWeight: 600 }}>NT${(Number(o.price)*Number(o.qty)).toLocaleString()}</span>
+                        <span style={{ whiteSpace: "nowrap", fontWeight: 600 }}>NT${(safeNum(o.price)*safeNum(o.qty)).toLocaleString()}</span>
                       </div>
                     ))}
                     <div style={{ borderTop: "1px solid #e8e0d5", marginTop: 8, paddingTop: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
