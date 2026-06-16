@@ -60,6 +60,7 @@ export default function App() {
             ordered: true,
             arrived: o.arrived || false,
             picked: o.picked || false,
+            outOfStock: o.outOfStock || false,
             qty: o.qty || 1,
             price: o.price || "",
             cost: o.cost || "",
@@ -374,12 +375,12 @@ export default function App() {
                     <span style={{ fontSize: 12, opacity: 0.7 }}>{cOrders.length} 筆 ｜ NT${cTotal.toLocaleString()}</span>
                   </div>
                   {cOrders.map((o, i) => {
-                    const waiting = !o.arrived ? waitingLabel(o.month) : null;
+                    const waiting = !o.arrived && !o.outOfStock ? waitingLabel(o.month) : null;
                     const profit = o.cost ? (safeNum(o.price) - safeNum(o.cost)) * safeNum(o.qty) : null;
                     const allDone = o.ordered && o.arrived && o.picked;
                     return (
                       <div key={o.id} style={{
-                        background: "#fff", borderLeft: `3px solid ${allDone ? "#4a7c59" : "#2d2318"}`,
+                        background: o.outOfStock ? "#f0f0f0" : "#fff", borderLeft: `3px solid ${o.outOfStock ? "#999" : allDone ? "#4a7c59" : "#2d2318"}`,
                         borderRight: "1px solid #e8e0d5",
                         borderBottom: i === cOrders.length - 1 ? "1px solid #e8e0d5" : "none",
                         borderRadius: i === cOrders.length - 1 ? "0 0 10px 10px" : 0,
@@ -387,9 +388,10 @@ export default function App() {
                       }}>
                         <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 4 }}>
                           <span style={{ background: monthColor(o.month), color: "#fff", borderRadius: 6, padding: "1px 7px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0 }}>{o.month}月</span>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: allDone ? "#aaa" : "#2d2318", textDecoration: allDone ? "line-through" : "none", flex: 1 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: o.outOfStock ? "#999" : allDone ? "#aaa" : "#2d2318", textDecoration: (allDone || o.outOfStock) ? "line-through" : "none", flex: 1 }}>
                             {o.product}{o.style && <span style={{ color: "#888", fontWeight: 400 }}>／{o.style}</span>}
                           </span>
+                          {o.outOfStock && <span style={{ background: "#666", color: "#fff", borderRadius: 6, padding: "1px 7px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>⚠️ 缺貨</span>}
                           {waiting && <span style={{ background: "#fff3cd", color: "#856404", borderRadius: 6, padding: "1px 7px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>⏳ {waiting}</span>}
                         </div>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "3px 12px", fontSize: 12, color: "#666", marginBottom: 8 }}>
