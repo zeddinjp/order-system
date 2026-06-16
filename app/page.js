@@ -391,7 +391,6 @@ export default function App() {
                           <span style={{ fontSize: 13, fontWeight: 600, color: o.outOfStock ? "#999" : allDone ? "#aaa" : "#2d2318", textDecoration: (allDone || o.outOfStock) ? "line-through" : "none", flex: 1 }}>
                             {o.product}{o.style && <span style={{ color: "#888", fontWeight: 400 }}>／{o.style}</span>}
                           </span>
-                          {o.outOfStock && <span style={{ background: "#666", color: "#fff", borderRadius: 6, padding: "1px 7px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>⚠️ 缺貨</span>}
                           {waiting && <span style={{ background: "#fff3cd", color: "#856404", borderRadius: 6, padding: "1px 7px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>⏳ {waiting}</span>}
                         </div>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "3px 12px", fontSize: 12, color: "#666", marginBottom: 8 }}>
@@ -403,13 +402,14 @@ export default function App() {
                           {o.date && <span>📅 {o.date}</span>}
                           {o.note && <span>📝 {o.note}</span>}
                         </div>
-                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                        <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
                           {[["ordered","已訂貨"],["arrived","到貨"],["picked","取貨"]].map(([field, label]) => (
                             <button key={field} onClick={() => toggleStatus(o.id, field)} style={{
                               border: "none", borderRadius: 6, padding: "5px 10px", fontSize: 12, cursor: "pointer", fontWeight: 600,
                               background: o[field] ? "#4a7c59" : "#e8e0d5", color: o[field] ? "#fff" : "#2d2318"
                             }}>{o[field] ? "✓ " : ""}{label}</button>
                           ))}
+                          {o.outOfStock && <span style={{ background: "#666", color: "#fff", borderRadius: 6, padding: "5px 10px", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap" }}>⚠️ 缺貨</span>}
                           <button onClick={() => startEdit(o)} style={{ ...statusBtn, background: "#f0e8dc", marginLeft: "auto" }}>✏️</button>
                           <button onClick={() => deleteOrder(o.id)} style={{ ...statusBtn, background: "#fde8e8", color: "#c0392b" }}>🗑</button>
                         </div>
